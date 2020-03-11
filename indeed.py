@@ -25,14 +25,21 @@ def extract_job(html):
     else:
         company = str(company.string)
     company = company.strip()
-    return {'title': title,'company': company}
+    location = html.find("div", {"class": "recJobLoc"})["data-rc-loc"]
+    job_id = html["data-jk"]
+    return {'title': title,
+            'company': company,
+            'location': location,
+            "link": f"https://kr.indeed.com/채용보기?jk={job_id}"}
 
 def extract_indeed_jobs(last_page):
     jobs = []
-    result = requests.get(f"{URL}&start={0*LIMIT}")
-    soup = BeautifulSoup(result.text, "html.parser")
-    results = soup.find_all("div", {"class": "jobsearch-SerpJobCard"})
-    for result in results:
-        job = extract_job(result)
-        jobs.append(job)
+    for page in range (last_page):
+        print(f"Scrapping page {page}")
+        result = requests.get(f"{URL}&start={page*LIMIT}")
+        soup = BeautifulSoup(result.text, "html.parser")
+        results = soup.find_all("div", {"class": "jobsearch-SerpJobCard"})
+        for result in results:
+            job = extract_job(result)
+            jobs.append(job)
     return jobs
